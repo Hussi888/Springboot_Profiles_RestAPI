@@ -47,7 +47,7 @@ public class User {
     private String email;
     private String password;
     private String confirmPassword;
-    private int gender;
+    private String gender;
     private String dob;
 
     public int getId() {
