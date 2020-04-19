@@ -40,6 +40,10 @@ public class User {
         else
             return false;
     }
+    public void updatePassword(String _password) {
+        password = _password;
+        confirmPassword = _password;
+    }
 
     @Id
     private int id;
@@ -47,7 +51,7 @@ public class User {
     private String email;
     private String password;
     private String confirmPassword;
-    private int gender;
+    private String gender;
     private String dob;
 
     public int getId() {

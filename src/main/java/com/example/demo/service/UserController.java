@@ -34,6 +34,7 @@ public class UserController {
         if (user_db != null) {
             if (user_db.get().getEmail().equals(user.getEmail())) {
                 if (user_db.get().getPassword().equals(user.getPassword())) {
+                    currentUser = user_db.get();
                     return "Login Successful.\n" + user_db.get().getDetails();
                 }
                 else {
@@ -51,26 +52,40 @@ public class UserController {
     }
     @PutMapping("/editprofile")
     public String editProfile(@RequestBody User user) {
-        if (user.getPassword() != currentUser.getPassword() ||
-            !user.comparePasswords())
-            return "Details update failed. Change in password detected.\n";
-        repository.save(user);
+        if (user.getPassword() != null)
+            if (!user.getPassword().equals(currentUser.getPassword()) ||
+                !user.comparePasswords())
+                return "Details update failed. Change in password detected.\n";
+            user.updatePassword(currentUser.getPassword());
+            repository.save(user);
         return "Details update successful.\n" + user.getDetails();
     }
     @PutMapping("editpassword")
     public String editPassword(@RequestBody User user) {
         if (user.comparePasswords()) {
-            repository.save(user);
-            return "Password update successful.\n" + user.getDetails();
+            currentUser.updatePassword(user.getPassword());
+            repository.save(currentUser);
+            return "Password update successful.\n" + currentUser.getDetails();
         }
         return "Password update failed. Passwords do not match.\n";
     }
     @DeleteMapping("/delete/{id}")
     public String deleteUser(@PathVariable int id) {
-        repository.deleteById(id);
-        return "User deleted with id: " + id;
+        if (repository.findById(id) != null && currentUser != null) {
+            repository.deleteById(id);
+            currentUser = null;
+            return "User with id " + id + " is deleted.";
+        }
+        return "No user, found with " + id + " in the session. Delete failed.";
     }
-
+    @GetMapping("/logout/{id}")
+    public String logout(@PathVariable int id) {
+        if (repository.findById(id) != null && currentUser != null) {
+            currentUser = null;
+            return "User with id " + id + " logged out.";
+        }
+        return "No user, found with " + id + " in the session. Log out failed.";
+    }
     @GetMapping("/findAllUsers")
     public List<User> getUsers() {
         return repository.findAll();
